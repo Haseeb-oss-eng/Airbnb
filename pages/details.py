@@ -1,7 +1,8 @@
 import streamlit as st
 import pandas as pd
-import geopandas as gpd
-from shapely.wkt import loads
+from streamlit_folium import st_folium
+import folium
+from folium import Popup
 
 def app():
     data = pd.read_csv("transformed_data_geo.csv",encoding='utf-8')
@@ -61,3 +62,52 @@ def app():
                     st.image(record['picture_url'], use_container_width=True)
                 else:
                     st.write("No image available.")
+
+    elif choose=="Bed Type":
+        property_type = ['Select a property type...'] + list(data['bed_type'].dropna().unique())
+        property_t = st.selectbox("Select the choice:",property_type)
+        query = data[data['property_type']==property_t]
+
+        if len(query)>0:
+            for i in range(len(query)):
+                if not query.empty:
+                    record = query.iloc[i]  # Safely access the first row
+
+                    st.markdown(f"<h4>Name: {record.get('name', 'N/A')}</h4>", unsafe_allow_html=True)
+                    st.markdown(f"<p><b>{record.get('street', 'No address provided.')}</b></p>", unsafe_allow_html=True)
+                    st.markdown(f"<p>{record.get('description', 'No description.')}</p>", unsafe_allow_html=True)
+
+                    if pd.notna(record.get('picture_url')):
+                        st.image(record['picture_url'], use_container_width=True)
+                    else:
+                        st.write("No image available.")
+                else:
+                    st.write("Select the option")
+        else:
+            st.write("Dataset is Empty!")
+    
+    elif choose == "Street":        
+        property_type = ['Select a property type...'] + list(data['street'].dropna().unique())
+        property_t = st.selectbox("Select the choice:", property_type)
+        query = data[data['street'] == property_t]
+
+        if len(query)>0:
+            for i in range(len(query)):
+                record = query.iloc[i]
+
+                pop = f"<h5><b>State: {record.get('state', 'N/A')}</b></h5><br> <p><b>{record.get('street', 'No address provided.')}</b></p> <p><i>Price: ${record.get('price_F', 'No amount')}</i></p>"
+                popups = Popup(pop,max_width=250)
+                m = folium.Map(location=[record.get('latitude'), record.get('longitude')],zoom_start=10)
+                folium.Marker(
+                    location=[record.get('latitude'), record.get('longitude')],
+                    popup=popups,
+                    icon=folium.Icon(color="blue", icon="home")
+                ).add_to(m)
+                st_folium(m, width=700, height=500)
+
+                if pd.notna(record.get('picture_url')):
+                    st.image(record['picture_url'], use_container_width=True)
+                else:
+                    st.write("No image available.")
+        else:
+            st.write("There is no data available for the selected property type.")
