@@ -9,7 +9,13 @@ def app():
     st.dataframe(list_data,use_container_width=True)
 
     m = folium.Map(location=[42.347934, -71.097580], zoom_start=13)
-    folium.Marker([42.347934, -71.097580], popup="Boston Marker").add_to(m)
+
+    # Loop through dataframe and add markers
+    for _, row in list_data.iterrows():
+        lat = row['latitude']
+        lon = row['longitude']
+        name = row.get('name', 'No Name')  # fallback if name not present
+        folium.Marker([lat, lon], popup=name).add_to(m)
 
     # Render it
     st_folium(m, width=700, height=500)
