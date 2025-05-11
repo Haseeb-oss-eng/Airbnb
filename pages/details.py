@@ -66,7 +66,7 @@ def app():
     elif choose=="Bed Type":
         property_type = ['Select a property type...'] + list(data['bed_type'].dropna().unique())
         property_t = st.selectbox("Select the choice:",property_type)
-        query = data[data['property_type']==property_t]
+        query = data[data['bed_type']==property_t]
 
         if len(query)>0:
             for i in range(len(query)):
